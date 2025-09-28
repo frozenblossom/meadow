@@ -36,10 +36,10 @@ Coming soon, turns out some of the components don't support Linux, see what I ca
 
 Here's some screenshots
 
-![Screenshot 1](./screenshots/1.png)
-![Screenshot 2](./screenshots/2.png)
-![Screenshot 3](./screenshots/3.png)
-![Screenshot 4](./screenshots/4.png)
+![Screenshot 1](./meadow/screenshots/1.png)
+![Screenshot 2](./meadow/screenshots/2.png)
+![Screenshot 3](./meadow/screenshots/3.png)
+![Screenshot 4](./meadow/screenshots/4.png)
 
 ## License
 
