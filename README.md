@@ -1,7 +1,7 @@
 # 🌱 Meadow Studio
 
 Meadow Studio, a local workspace for AI artists
-Just you, your machine, and vibes.
+Start your ComfyUI and get that GPU to work~
 
 
 ## ✨ Why use this
@@ -16,17 +16,20 @@ Just you, your machine, and vibes.
 ## 💌 Feedback
 
 - Use it, break it, tell me what went boom 💥 so I can fix it (and probably create a new bug or two)
-- Drop feedback in Discord: Blossom’s Nest
-- Star the repo ⭐ should be free
+- Join the Discord: [Blossom’s Nest](https://discord.gg/sSfFBXzk5W)
+- Star the repo ⭐
 
 
 ## 🛠 Download
 
 ✅ Windows
+[Portable ZIP](https://github.com/frozenblossom/meadow/releases/download/0.1.0/meadow_windows_x64.zip)
 
 ✅ MacOS
+[MacOS DMG](https://github.com/frozenblossom/meadow/releases/download/0.1.0/meadow_mac.dmg)
 
 ✅ Linux
+Coming soon, turns out some of the components don't support Linux, see what I can do
 
 
 ## Screenshots
