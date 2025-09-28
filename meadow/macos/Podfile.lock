@@ -1,0 +1,94 @@
+PODS:
+  - audio_session (0.0.1):
+    - FlutterMacOS
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - desktop_drop (0.0.1):
+    - FlutterMacOS
+  - file_picker (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+  - just_audio (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - package_info_plus (0.0.1):
+    - FlutterMacOS
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - pro_video_editor (0.0.1):
+    - FlutterMacOS
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
+  - video_player_avfoundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - audio_session (from `Flutter/ephemeral/.symlinks/plugins/audio_session/macos`)
+  - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin`)
+  - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
+  - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - just_audio (from `Flutter/ephemeral/.symlinks/plugins/just_audio/darwin`)
+  - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - pro_video_editor (from `Flutter/ephemeral/.symlinks/plugins/pro_video_editor/macos`)
+  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
+  - video_player_avfoundation (from `Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin`)
+
+EXTERNAL SOURCES:
+  audio_session:
+    :path: Flutter/ephemeral/.symlinks/plugins/audio_session/macos
+  audioplayers_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin
+  desktop_drop:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
+  file_picker:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  just_audio:
+    :path: Flutter/ephemeral/.symlinks/plugins/just_audio/darwin
+  package_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  pro_video_editor:
+    :path: Flutter/ephemeral/.symlinks/plugins/pro_video_editor/macos
+  shared_preferences_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
+  sqflite_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
+  video_player_avfoundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin
+
+SPEC CHECKSUMS:
+  audio_session: eaca2512cf2b39212d724f35d11f46180ad3a33e
+  audioplayers_darwin: 4f9ca89d92d3d21cec7ec580e78ca888e5fb68bd
+  desktop_drop: 248706031734554504f939cab1ad4c5fbc9c9c72
+  file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
+  package_info_plus: f0052d280d17aa382b932f399edf32507174e870
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  pro_video_editor: dcbcb039347ed4372064b65664e5b23546c14d4e
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  url_launcher_macos: 0fba8ddabfc33ce0a9afe7c5fef5aab3d8d2d673
+  video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
+
+PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
+
+COCOAPODS: 1.16.2

@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-09-16T12:00:00Z",
+  "models": [
+    {
+      "id": "ace-step",
+      "name": "ACE-Step",
+      "description": "A Step Towards Music Generation Foundation Model",
+      "category": "diffusion",
+      "weights": [
+        {
+          "filename": "ace_step_v1_3.5b.safetensors",
+          "dir": "checkpoints",
+          "url": "https://huggingface.co/Comfy-Org/ACE-Step_ComfyUI_repackaged/resolve/main/all_in_one/ace_step_v1_3.5b.safetensors"
+        }
+      ],
+      "downloadStatus": "notStarted",
+      "overallProgress": 0.0
+    },
+    {
+      "id": "wan-2.1-vace-1.3B",
+      "name": "WAN2.1 VACE 1.3B",
+      "description": "Open and Advanced Large-Scale Video Generative Models",
+      "category": "diffusion",
+      "weights": [
+        {
+          "filename": "wan2.1_vace_1.3B_fp16.safetensors",
+          "dir": "diffusion_models",
+          "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_vace_1.3B_fp16.safetensors"
+        },
+        {
+          "filename": "wan_2.1_vae.safetensors",
+          "dir": "vae",
+          "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors?download=trues"
+        },
+        {
+          "filename": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+          "dir": "text_encoders",
+          "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors?download=trues"
+        },
+        {
+          "filename": "Wan21_CausVid_bidirect2_T2V_1_3B_lora_rank32.safetensors",
+          "dir": "loras",
+          "url": "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Wan21_CausVid_bidirect2_T2V_1_3B_lora_rank32.safetensors?download=true"
+        }
+      ],
+      "downloadStatus": "notStarted",
+      "overallProgress": 0.0
+    }
+  ]
+}
