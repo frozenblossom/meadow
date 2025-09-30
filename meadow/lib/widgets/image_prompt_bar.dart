@@ -38,7 +38,7 @@ class _ImagePromptBarState extends State<ImagePromptBar> {
     super.dispose();
   }
 
-  void _onGenerate() {
+  void _onGenerate() async {
     if (_formKey.currentState?.validate() ?? false) {
       final prompt = _controller.text;
       final workspace = Get.find<WorkspaceController>().currentWorkspace.value;
@@ -54,7 +54,7 @@ class _ImagePromptBarState extends State<ImagePromptBar> {
 
       generateAsset(
         ext: 'png',
-        workflow: simpleCheckpointWorkflow(
+        workflow: await simpleCheckpointWorkflow(
           prompt: prompt,
           height: height,
           width: width,

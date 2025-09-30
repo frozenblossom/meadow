@@ -83,7 +83,7 @@ class ImageGenerationSheet extends StatelessWidget {
   void _generateImageFromPrompt() async {
     final tasksController = Get.find<TasksController>();
 
-    final workflow = simpleCheckpointWorkflow(
+    final workflow = await simpleCheckpointWorkflow(
       prompt: clip.imagePrompt,
       negativePrompt: "",
       width: context.mediaWidth,

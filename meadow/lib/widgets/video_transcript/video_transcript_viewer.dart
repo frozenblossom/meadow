@@ -1688,7 +1688,7 @@ class _BackgroundMusicSheet extends StatelessWidget {
     // Create a prompt based on the transcript content
     final musicPrompt = _createMusicPrompt();
 
-    final workflow = aceStepWorkflow(
+    final workflow = await aceStepWorkflow(
       lyrics: musicPrompt,
       genre: "cinematic",
       audioLength: transcript.durationSeconds,
@@ -1704,11 +1704,7 @@ class _BackgroundMusicSheet extends StatelessWidget {
 
     // TODO: Implement generateAsset function call here
     // This would need to be imported from wherever it's defined
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Music generation started! Check the tasks panel.'),
-      ),
-    );
+    Get.snackbar('Success', 'Music generation started! Check the tasks panel.');
   }
 
   void _selectExistingMusic(BuildContext context) {

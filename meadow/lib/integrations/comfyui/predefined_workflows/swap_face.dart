@@ -1,49 +1,17 @@
 import 'dart:typed_data';
 
 import 'package:meadow/integrations/comfyui/workflow.dart';
+import 'package:meadow/services/workflow_template_service.dart';
 
-ComfyUIWorkflow swapfaceWorkflow({
+Future<ComfyUIWorkflow> swapfaceWorkflow({
   required Uint8List image,
   required Uint8List face,
-}) {
-  return ComfyUIWorkflow(
-    workflow: {
-      "1": {
-        "inputs": {
-          "enabled": true,
-          "swap_model": "inswapper_128.onnx",
-          "facedetection": "YOLOv5n",
-          "face_restore_model": "codeformer-v0.1.0.pth",
-          "face_restore_visibility": 1,
-          "codeformer_weight": 0.5,
-          "detect_gender_input": "no",
-          "detect_gender_source": "no",
-          "input_faces_index": "0",
-          "source_faces_index": "0",
-          "console_log_level": 1,
-          "input_image": ["2", 0],
-          "source_image": ["3", 0],
-        },
-        "class_type": "ReActorFaceSwap",
-        "_meta": {"title": "ReActor 🌌 Fast Face Swap"},
-      },
-      "2": {
-        "inputs": {"image": imageBase64(image)},
-        "class_type": "ETN_LoadImageBase64",
-        "_meta": {"title": "Load Image"},
-      },
-      "3": {
-        "inputs": {"image": imageBase64(face)},
-        "class_type": "ETN_LoadImageBase64",
-        "_meta": {"title": "Load Image"},
-      },
-      "4": {
-        "inputs": {
-          "images": ["1", 0],
-        },
-        "class_type": "PreviewImage",
-        "_meta": {"title": "Preview Image"},
-      },
+}) async {
+  return WorkflowTemplateService.createFromTemplate(
+    'swap_face',
+    {
+      'image': image,
+      'face': face,
     },
   );
 }

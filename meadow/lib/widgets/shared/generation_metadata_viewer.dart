@@ -105,7 +105,7 @@ class _GenerationMetadataViewerState extends State<GenerationMetadataViewer> {
     return widget.metadata['type'] == 'video';
   }
 
-  void _reproduceGeneration() {
+  void _reproduceGeneration() async {
     // Collect selected parameters
     final selectedData = <String, dynamic>{};
 
@@ -134,7 +134,7 @@ class _GenerationMetadataViewerState extends State<GenerationMetadataViewer> {
 
       generateAsset(
         ext: 'mp4',
-        workflow: videoWorkflow(
+        workflow: await videoWorkflow(
           prompt: selectedData['prompt'] ?? '',
           seed:
               selectedData['seed'] ??
@@ -176,7 +176,7 @@ class _GenerationMetadataViewerState extends State<GenerationMetadataViewer> {
 
       generateAsset(
         ext: 'png',
-        workflow: simpleCheckpointWorkflow(
+        workflow: await simpleCheckpointWorkflow(
           prompt: selectedData['prompt'] ?? '',
           height: selectedData['height'] ?? 1024,
           width: selectedData['width'] ?? 1024,

@@ -97,7 +97,7 @@ class VideoGenerationSheet extends StatelessWidget {
   void _generateTextToVideo() async {
     final tasksController = Get.find<TasksController>();
 
-    final workflow = videoWorkflow(
+    final workflow = await videoWorkflow(
       prompt: '${clip.imagePrompt}, ${clip.videoPrompt}',
       refImage: null, // Text-to-video mode
       width: context.mediaWidth,
@@ -130,7 +130,7 @@ class VideoGenerationSheet extends StatelessWidget {
     // Read image file as bytes
     final imageBytes = await clip.generatedImageFile!.readAsBytes();
 
-    final workflow = videoWorkflow(
+    final workflow = await videoWorkflow(
       prompt: clip.videoPrompt,
       refImage: imageBytes,
       width: context.mediaWidth,

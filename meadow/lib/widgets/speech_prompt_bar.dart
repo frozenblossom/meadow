@@ -269,7 +269,7 @@ class _SpeechPromptBarState extends State<SpeechPromptBar> {
         referenceText = _refTextController.text.trim();
       }
 
-      final workflow = ttsWorkflow(
+      final workflow = await ttsWorkflow(
         text: text,
         referenceAudioPath: referenceAudioPath,
         referenceText: referenceText,

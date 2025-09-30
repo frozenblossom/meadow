@@ -227,28 +227,6 @@ class EnhancedTaskProgressWidget extends StatelessWidget {
                         ),
                       ),
                     ],
-                    /*if (task.isRunning) ...[
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          // TODO: Implement actual cancel functionality when available
-                          Get.snackbar(
-                            'Cancel',
-                            'Task cancellation not yet implemented',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        },
-                        icon: Icon(Icons.stop, size: 14),
-                        label: Text('Cancel', style: TextStyle(fontSize: 12)),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.orange,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          minimumSize: Size.zero,
-                        ),
-                      ),
-                    ],*/
                   ],
                 ),
               ],

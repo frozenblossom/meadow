@@ -72,7 +72,7 @@ class _VideoPromptBarState extends State<VideoPromptBar> {
 
       generateAsset(
         ext: 'mp4',
-        workflow: videoWorkflow(
+        workflow: await videoWorkflow(
           prompt: prompt,
           seed: seed,
           width: width,

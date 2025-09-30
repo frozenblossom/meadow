@@ -86,6 +86,7 @@ flutter:
   assets:
     - assets/model_catalog.json
     - assets/icon.png
+    - assets/workflows/
 
 flutter_launcher_icons:
   android: "launcher_icon"

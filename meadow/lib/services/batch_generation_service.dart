@@ -83,7 +83,7 @@ class BatchGenerationService {
     if (clip.missingAssets.contains('Image')) {
       try {
         await generateAsset(
-          workflow: simpleCheckpointWorkflow(
+          workflow: await simpleCheckpointWorkflow(
             prompt: clip.imagePrompt,
             height: context.mediaHeight,
             width: context.mediaWidth,
@@ -112,7 +112,7 @@ class BatchGenerationService {
     if (clip.missingAssets.contains('Speech Audio') && clip.speech != null) {
       try {
         await generateAsset(
-          workflow: ttsWorkflow(
+          workflow: await ttsWorkflow(
             text: clip.speech!,
           ),
           ext: 'mp3',
@@ -136,7 +136,7 @@ class BatchGenerationService {
     if (clip.missingAssets.contains('Video')) {
       try {
         await generateAsset(
-          workflow: videoWorkflow(
+          workflow: await videoWorkflow(
             prompt: '${clip.imagePrompt}, ${clip.videoPrompt}',
             refImage: clip.hasGeneratedImage
                 ? await clip.generatedImageFile!.readAsBytes()

@@ -272,9 +272,9 @@ class _ViewModeState extends State<ViewMode> {
                   _buildSidebarActionButton(
                     icon: Icons.save,
                     label: "Detail Face",
-                    onTap: () {
+                    onTap: () async {
                       runWorkflow(
-                        detailFaceWorkflow(
+                        await detailFaceWorkflow(
                           prompt: 'detailed face, detailed skin',
                           initialImage: _imageBytes!,
                         ),
@@ -302,7 +302,7 @@ class _ViewModeState extends State<ViewMode> {
                       }
 
                       runWorkflow(
-                        swapfaceWorkflow(
+                        await swapfaceWorkflow(
                           face: await asset!.getBytes(),
                           image: _imageBytes!,
                         ),
@@ -312,9 +312,9 @@ class _ViewModeState extends State<ViewMode> {
                   _buildSidebarActionButton(
                     icon: Icons.arrow_outward_sharp,
                     label: "Upscale 2x",
-                    onTap: () {
+                    onTap: () async {
                       runWorkflow(
-                        ultimateUpscaleWorkflow(
+                        await ultimateUpscaleWorkflow(
                           image: _imageBytes!,
                           scaleFactor: 2,
                         ),

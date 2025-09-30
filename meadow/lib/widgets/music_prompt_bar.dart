@@ -308,7 +308,7 @@ class _MusicPromptBarState extends State<MusicPromptBar> {
         genre = _genreController.text.trim();
       }
 
-      final workflow = aceStepWorkflow(
+      final workflow = await aceStepWorkflow(
         lyrics: lyrics,
         genre: genre,
         referenceAudioPath: referenceAudioPath,

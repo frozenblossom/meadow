@@ -83,7 +83,7 @@ class AudioGenerationSheet extends StatelessWidget {
 
     final tasksController = Get.find<TasksController>();
 
-    final workflow = ttsWorkflow(
+    final workflow = await ttsWorkflow(
       text: clip.speech!,
       referenceAudioPath: null,
     );
