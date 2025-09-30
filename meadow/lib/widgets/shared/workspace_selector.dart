@@ -256,39 +256,8 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      Colors.black.withAlpha(100),
-                      Colors.black.withAlpha(50),
-                    ]
-                  : [
-                      Colors.white.withAlpha(100),
-                      Colors.white.withAlpha(50),
-                    ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withAlpha(30)
-                  : Colors.black.withAlpha(20),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withAlpha(50)
-                    : Colors.black.withAlpha(15),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -300,17 +269,6 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
 
                   return Expanded(
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.black.withAlpha(30)
-                            : Colors.white.withAlpha(50),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withAlpha(20)
-                              : Colors.black.withAlpha(15),
-                        ),
-                      ),
                       child: DropdownMenu<Workspace>(
                         width: 280,
                         controller: _dropdownController,

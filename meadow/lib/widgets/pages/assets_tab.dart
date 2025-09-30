@@ -138,7 +138,6 @@ class AssetsTab extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
                           color: isDark
                               ? Colors.black.withAlpha(50)
                               : Colors.white.withAlpha(100),

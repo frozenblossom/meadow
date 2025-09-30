@@ -73,7 +73,6 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                       color: isDark
                           ? Colors.black.withAlpha(25)
                           : Colors.white.withAlpha(25),
-                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: isDark
                             ? Colors.white.withAlpha(25)
@@ -153,7 +152,6 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                     color: isDark
                         ? Colors.black.withAlpha(25)
                         : Colors.white.withAlpha(25),
-                    borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: isDark
                           ? Colors.white.withAlpha(25)

@@ -180,66 +180,6 @@ class _FloatingDockState extends State<FloatingDock> {
     );
   }
 
-  Widget _buildPromptInput() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Expanded(
-      child: Container(
-        height: 52,
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.black.withAlpha(50)
-              : Colors.white.withAlpha(75),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withAlpha(25)
-                : Colors.black.withAlpha(25),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withAlpha(75)
-                  : Colors.black.withAlpha(25),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: TextField(
-          controller: _promptController,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText:
-                'Enter your ${_mediaTypeMenuItems[_selectedMediaType]?.title.toLowerCase()} prompt...',
-            hintStyle: TextStyle(
-              color: isDark
-                  ? Colors.white.withAlpha(128)
-                  : Colors.black.withAlpha(128),
-              fontSize: 16,
-            ),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
-            ),
-          ),
-          onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              widget.onPromptSubmitted?.call(value.trim());
-            }
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildOptionsButton() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -376,7 +316,7 @@ class _FloatingDockState extends State<FloatingDock> {
           margin: const EdgeInsets.all(20),
           child: isMobile
               ? _buildMobileLayout(isDark, effectiveWidth)
-              : _buildDesktopLayout(isDark, effectiveWidth),
+              : _buildDesktopLayoutWithDragHandles(isDark, effectiveWidth),
         );
       },
     );
@@ -415,107 +355,88 @@ class _FloatingDockState extends State<FloatingDock> {
     );
   }
 
-  // Desktop layout: Resizable row with drag handle
-  Widget _buildDesktopLayout(bool isDark, double width) {
+  // Desktop layout: Mobile layout with drag handles for resizing
+  Widget _buildDesktopLayoutWithDragHandles(bool isDark, double width) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Resize handle (left)
-        GestureDetector(
-          onPanStart: (_) => setState(() => _isResizing = true),
-          onPanEnd: (_) => setState(() => _isResizing = false),
-          onPanUpdate: (details) {
-            setState(() {
-              _dockWidth = (_dockWidth - details.delta.dx * 2).clamp(
-                _minWidth,
-                Get.width - 100,
-              );
-            });
-          },
-          child: Container(
-            width: 20,
-            height: 80,
-            decoration: BoxDecoration(
-              color: _isResizing
-                  ? (isDark
-                        ? Colors.white.withAlpha(30)
-                        : Colors.black.withAlpha(30))
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Container(
-                width: 4,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withAlpha(50)
-                      : Colors.black.withAlpha(50),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-          ),
-        ),
-        // Main dock content
+        // Left resize handle
+        _buildResizeHandle(isDark, isLeft: true),
+        // Main dock content (using mobile layout)
         ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
               width: width,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: _buildGlassDecoration(isDark),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildMediaTypeDropdown(),
-                  _buildPromptInput(),
-                  _buildOptionsButton(),
-                  const SizedBox(width: 16),
-                  _buildGenerateButton(),
+                  // Top row: Prompt input
+                  _buildPromptInputMobile(),
+                  const SizedBox(height: 12),
+                  // Bottom row: Media type, options, and generate button
+                  Row(
+                    children: [
+                      _buildMediaTypeDropdown(),
+                      const Spacer(),
+                      _buildOptionsButton(),
+                      const SizedBox(width: 12),
+                      _buildGenerateButton(),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
         ),
-        // Resize handle (right)
-        GestureDetector(
-          onPanStart: (_) => setState(() => _isResizing = true),
-          onPanEnd: (_) => setState(() => _isResizing = false),
-          onPanUpdate: (details) {
-            setState(() {
-              _dockWidth = (_dockWidth + details.delta.dx * 2).clamp(
-                _minWidth,
-                Get.width - 100,
-              );
-            });
-          },
+        // Right resize handle
+        _buildResizeHandle(isDark, isLeft: false),
+      ],
+    );
+  }
+
+  // Helper method to build resize handles
+  Widget _buildResizeHandle(bool isDark, {required bool isLeft}) {
+    return GestureDetector(
+      onPanStart: (_) => setState(() => _isResizing = true),
+      onPanEnd: (_) => setState(() => _isResizing = false),
+      onPanUpdate: (details) {
+        setState(() {
+          final deltaX = isLeft ? -details.delta.dx : details.delta.dx;
+          _dockWidth = (_dockWidth + deltaX * 2).clamp(
+            _minWidth,
+            Get.width - 100,
+          );
+        });
+      },
+      child: Container(
+        width: 20,
+        height: 100, // Slightly taller to accommodate the mobile layout height
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: _isResizing
+              ? (isDark
+                    ? Colors.white.withAlpha(30)
+                    : Colors.black.withAlpha(30))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
           child: Container(
-            width: 20,
-            height: 80,
+            width: 4,
+            height: 40,
             decoration: BoxDecoration(
-              color: _isResizing
-                  ? (isDark
-                        ? Colors.white.withAlpha(30)
-                        : Colors.black.withAlpha(30))
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Container(
-                width: 4,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withAlpha(50)
-                      : Colors.black.withAlpha(50),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              color: isDark
+                  ? Colors.white.withAlpha(50)
+                  : Colors.black.withAlpha(50),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
