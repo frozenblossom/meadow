@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:meadow/controllers/workspace_controller.dart';
@@ -404,12 +403,7 @@ class _FloatingDockState extends State<FloatingDock> {
                 children: [
                   _buildMediaTypeDropdown(),
                   const Spacer(),
-                  InkWell(
-                    onTap: () {
-                      // TODO: Options functionality to be implemented later
-                    },
-                    child: _buildOptionsButton(),
-                  ),
+                  _buildOptionsButton(),
                   const SizedBox(width: 12),
                   _buildGenerateButton(),
                 ],
@@ -476,12 +470,7 @@ class _FloatingDockState extends State<FloatingDock> {
                 children: [
                   _buildMediaTypeDropdown(),
                   _buildPromptInput(),
-                  InkWell(
-                    onTap: () {
-                      // TODO: Options functionality to be implemented later
-                    },
-                    child: _buildOptionsButton(),
-                  ),
+                  _buildOptionsButton(),
                   const SizedBox(width: 16),
                   _buildGenerateButton(),
                 ],

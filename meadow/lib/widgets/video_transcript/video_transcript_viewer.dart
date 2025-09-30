@@ -1702,8 +1702,6 @@ class _BackgroundMusicSheet extends StatelessWidget {
 
     tasksController.addTask(task);
 
-    // TODO: Implement generateAsset function call here
-    // This would need to be imported from wherever it's defined
     Get.snackbar('Success', 'Music generation started! Check the tasks panel.');
   }
 

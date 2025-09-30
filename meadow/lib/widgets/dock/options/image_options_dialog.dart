@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:meadow/integrations/comfyui/services/comfyui_api_service.dart';
 
 class ImageOptionsDialog extends StatefulWidget {
   final int initialWidth;
@@ -26,8 +28,6 @@ class ImageOptionsDialogState extends State<ImageOptionsDialog> {
 
   final List<String> _availableModels = [
     'dreamshaper_lightning.safetensors',
-    'realvisxl.safetensors',
-    'juggernaut_final.safetensors',
   ];
 
   @override
@@ -43,6 +43,22 @@ class ImageOptionsDialogState extends State<ImageOptionsDialog> {
       text: widget.initialSeed?.toString() ?? '',
     );
     _selectedModel = widget.initialModel;
+
+    try {
+      var apiService = Get.find<ComfyUIAPIService>();
+      apiService.getModels('checkpoints').then((models) {
+        setState(() {
+          _availableModels.clear();
+          _availableModels.addAll(models);
+          if (!_availableModels.contains(_selectedModel) &&
+              _availableModels.isNotEmpty) {
+            _selectedModel = _availableModels.first;
+          }
+        });
+      });
+    } catch (e) {
+      debugPrint('Error fetching models: $e');
+    }
   }
 
   @override
@@ -106,7 +122,7 @@ class ImageOptionsDialogState extends State<ImageOptionsDialog> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedModel,
+              initialValue: _selectedModel,
               decoration: const InputDecoration(
                 labelText: 'Model',
                 border: OutlineInputBorder(),
