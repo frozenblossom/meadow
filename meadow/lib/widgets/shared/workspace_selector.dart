@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:meadow/controllers/workspace_controller.dart';
@@ -240,102 +241,230 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<WorkspaceController>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     if (isLoading) {
-      return const SizedBox(
-        width: 250,
-        child: Center(child: CircularProgressIndicator()),
+      return Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Obx(
-          () {
-            // Update the controller text when the current workspace changes
-            final currentWorkspace = controller.currentWorkspace.value;
-            _dropdownController.text = currentWorkspace?.name ?? '';
-
-            return Expanded(
-              child: DropdownMenu<Workspace>(
-                width: 300,
-                controller: _dropdownController,
-                dropdownMenuEntries: controller.availableWorkspaces.map((ws) {
-                  return DropdownMenuEntry(
-                    value: ws,
-                    label: ws.name,
-                    labelWidget: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          ws.name,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        Row(
-                          children: [
-                            if (ws.defaultWidth != null &&
-                                ws.defaultHeight != null)
-                              Text(
-                                ws.dimensionString,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            if (ws.defaultWidth != null &&
-                                ws.defaultHeight != null)
-                              Text(
-                                ' • ',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            Text(
-                              '${ws.videoDurationSeconds}s video',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    trailingIcon: _buildWorkspaceActions(ws),
-                  );
-                }).toList(),
-                onSelected: (val) {
-                  if (val != null) {
-                    controller.setWorkspace(val);
-                  }
-                },
-                hintText: 'Select Workspace',
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [
+                      Colors.black.withAlpha(100),
+                      Colors.black.withAlpha(50),
+                    ]
+                  : [
+                      Colors.white.withAlpha(100),
+                      Colors.white.withAlpha(50),
+                    ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withAlpha(30)
+                  : Colors.black.withAlpha(20),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withAlpha(50)
+                    : Colors.black.withAlpha(15),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
               ),
-            );
-          },
-        ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Obx(
+                () {
+                  // Update the controller text when the current workspace changes
+                  final currentWorkspace = controller.currentWorkspace.value;
+                  _dropdownController.text = currentWorkspace?.name ?? '';
 
-        const SizedBox(width: 8),
-        IconButton(
-          icon: const Icon(Icons.add),
-          tooltip: 'Create New Workspace',
-          onPressed: _createNewWorkspace,
+                  return Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.black.withAlpha(30)
+                            : Colors.white.withAlpha(50),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withAlpha(20)
+                              : Colors.black.withAlpha(15),
+                        ),
+                      ),
+                      child: DropdownMenu<Workspace>(
+                        width: 280,
+                        controller: _dropdownController,
+                        inputDecorationTheme: InputDecorationTheme(
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? Colors.white.withAlpha(128)
+                                : Colors.black.withAlpha(128),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        textStyle: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                        dropdownMenuEntries: controller.availableWorkspaces.map(
+                          (ws) {
+                            return DropdownMenuEntry(
+                              value: ws,
+                              label: ws.name,
+                              labelWidget: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    ws.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      if (ws.defaultWidth != null &&
+                                          ws.defaultHeight != null)
+                                        Text(
+                                          ws.dimensionString,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      if (ws.defaultWidth != null &&
+                                          ws.defaultHeight != null)
+                                        Text(
+                                          ' • ',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      Text(
+                                        '${ws.videoDurationSeconds}s video',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              trailingIcon: _buildWorkspaceActions(ws),
+                            );
+                          },
+                        ).toList(),
+                        onSelected: (val) {
+                          if (val != null) {
+                            controller.setWorkspace(val);
+                          }
+                        },
+                        hintText: 'Select Workspace',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
+              _buildGlassIconButton(
+                icon: Icons.add,
+                tooltip: 'Create New Workspace',
+                onPressed: _createNewWorkspace,
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _buildGlassIconButton(
+                icon: Icons.refresh,
+                tooltip: 'Refresh Workspaces',
+                onPressed: _refreshWorkspaces,
+                isDark: isDark,
+              ),
+            ],
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          tooltip: 'Refresh Workspaces',
-          onPressed: _refreshWorkspaces,
+      ),
+    );
+  }
+
+  Widget _buildGlassIconButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+    required bool isDark,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  Colors.white.withAlpha(20),
+                  Colors.white.withAlpha(10),
+                ]
+              : [
+                  Colors.black.withAlpha(15),
+                  Colors.black.withAlpha(5),
+                ],
         ),
-      ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(30)
+              : Colors.black.withAlpha(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withAlpha(30)
+                : Colors.black.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: isDark ? Colors.white70 : Colors.black54,
+          size: 20,
+        ),
+        tooltip: tooltip,
+        onPressed: onPressed,
+        splashRadius: 20,
+      ),
     );
   }
 }

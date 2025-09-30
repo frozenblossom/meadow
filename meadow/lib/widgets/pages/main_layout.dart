@@ -145,34 +145,31 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
 
             // Main content area with glass effect
             Positioned.fill(
-              top: 60, // Leave space for app bar
-              child: Container(
-                margin: const EdgeInsets.all(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
+              top: 56, // Leave space for app bar
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.black.withAlpha(25)
+                        : Colors.white.withAlpha(25),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
                       color: isDark
-                          ? Colors.black.withAlpha(25)
-                          : Colors.white.withAlpha(25),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withAlpha(25)
-                            : Colors.black.withAlpha(12),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isDark
-                              ? Colors.black.withAlpha(75)
-                              : Colors.black.withAlpha(25),
-                          blurRadius: 30,
-                          offset: const Offset(0, 15),
-                        ),
-                      ],
+                          ? Colors.white.withAlpha(25)
+                          : Colors.black.withAlpha(12),
                     ),
-                    child: const AssetsTab(),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? Colors.black.withAlpha(75)
+                            : Colors.black.withAlpha(25),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                    ],
                   ),
+                  child: const AssetsTab(),
                 ),
               ),
             ),
@@ -226,13 +223,12 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     required bool isMobile,
   }) {
     return AppBar(
-      backgroundColor:
-          theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+      backgroundColor: Colors.transparent,
       elevation: theme.appBarTheme.elevation ?? 1,
-      centerTitle: !isMobile,
+      centerTitle: false,
       title: Text(
-        isMobile ? 'Meadow' : 'Meadow Studio',
-        style: theme.textTheme.titleLarge?.copyWith(
+        'Meadow',
+        style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
         ),
       ),
