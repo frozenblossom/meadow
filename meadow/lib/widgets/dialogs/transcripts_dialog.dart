@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:meadow/controllers/video_transcript_controller.dart';
@@ -30,132 +31,207 @@ class TranscriptsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(VideoTranscriptController());
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(75),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.8,
+            constraints: const BoxConstraints(
+              maxWidth: 800,
+              maxHeight: 600,
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.dividerColor.withAlpha(50),
-                  ),
-                ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        Colors.black.withAlpha(200),
+                        Colors.black.withAlpha(150),
+                      ]
+                    : [
+                        Colors.white.withAlpha(200),
+                        Colors.white.withAlpha(150),
+                      ],
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.video_library,
-                    color: theme.colorScheme.primary,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Video Transcripts',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withAlpha(50)
+                    : Colors.black.withAlpha(25),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withAlpha(100)
+                      : Colors.black.withAlpha(50),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDark
+                            ? Colors.white.withAlpha(25)
+                            : Colors.black.withAlpha(15),
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                    tooltip: 'Close',
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: isDark
+                                ? [
+                                    const Color(0xFF4F46E5).withAlpha(150),
+                                    const Color(0xFF7C3AED).withAlpha(150),
+                                  ]
+                                : [
+                                    const Color(0xFF6366F1).withAlpha(150),
+                                    const Color(0xFF8B5CF6).withAlpha(150),
+                                  ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.video_library,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Video Transcripts',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const Spacer(),
+                      _buildGlassIconButton(
+                        icon: Icons.close,
+                        onPressed: () => Navigator.of(context).pop(),
+                        tooltip: 'Close',
+                        isDark: isDark,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            // Content
-            Expanded(
-              child: Obx(() {
-                if (controller.transcripts.isEmpty) {
-                  return _buildEmptyState(context, theme, controller);
-                }
+                // Content
+                Expanded(
+                  child: Obx(() {
+                    if (controller.transcripts.isEmpty) {
+                      return _buildEmptyState(
+                        context,
+                        theme,
+                        controller,
+                        isDark,
+                      );
+                    }
 
-                return Column(
-                  children: [
-                    // Add new transcript button
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const VideoTranscriptForm(),
+                    return Column(
+                      children: [
+                        // Add new transcript button
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              _buildGlassButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const VideoTranscriptForm(),
+                                    ),
+                                  );
+                                },
+                                label: 'New Transcript',
+                                icon: Icons.add,
+                                isPrimary: true,
+                                isDark: isDark,
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: isDark
+                                        ? [
+                                            Colors.white.withAlpha(20),
+                                            Colors.white.withAlpha(10),
+                                          ]
+                                        : [
+                                            Colors.black.withAlpha(15),
+                                            Colors.black.withAlpha(8),
+                                          ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withAlpha(25)
+                                        : Colors.black.withAlpha(15),
+                                  ),
+                                ),
+                                child: Text(
+                                  '${controller.transcripts.length} transcript${controller.transcripts.length == 1 ? '' : 's'}',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Transcripts list
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: controller.transcripts.length,
+                            itemBuilder: (context, index) {
+                              final transcript = controller.transcripts[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _buildTranscriptCard(
+                                  context,
+                                  transcript,
+                                  theme,
+                                  isDark,
                                 ),
                               );
                             },
-                            icon: const Icon(Icons.add),
-                            label: const Text('New Transcript'),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                            ),
                           ),
-                          const Spacer(),
-                          Text(
-                            '${controller.transcripts.length} transcript${controller.transcripts.length == 1 ? '' : 's'}',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withAlpha(
-                                180,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Transcripts list
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: controller.transcripts.length,
-                        itemBuilder: (context, index) {
-                          final transcript = controller.transcripts[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildTranscriptCard(
-                              context,
-                              transcript,
-                              theme,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              }),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -165,52 +241,97 @@ class TranscriptsDialog extends StatelessWidget {
     BuildContext context,
     ThemeData theme,
     VideoTranscriptController controller,
+    bool isDark,
   ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.video_library_outlined,
-              size: 64,
-              color: theme.colorScheme.onSurface.withAlpha(125),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No Video Transcripts',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(180),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Create your first video transcript to get started',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(153),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const VideoTranscriptForm(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Create Transcript'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [
+                          Colors.white.withAlpha(15),
+                          Colors.white.withAlpha(8),
+                        ]
+                      : [
+                          Colors.black.withAlpha(10),
+                          Colors.black.withAlpha(5),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withAlpha(25)
+                      : Colors.black.withAlpha(15),
                 ),
               ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? [
+                                const Color(0xFF4F46E5).withAlpha(100),
+                                const Color(0xFF7C3AED).withAlpha(100),
+                              ]
+                            : [
+                                const Color(0xFF6366F1).withAlpha(100),
+                                const Color(0xFF8B5CF6).withAlpha(100),
+                              ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.video_library_outlined,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'No Video Transcripts',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Create your first video transcript to get started',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  _buildGlassButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const VideoTranscriptForm(),
+                        ),
+                      );
+                    },
+                    label: 'Create Transcript',
+                    icon: Icons.add,
+                    isPrimary: true,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -220,134 +341,141 @@ class TranscriptsDialog extends StatelessWidget {
     BuildContext context,
     VideoTranscript transcript,
     ThemeData theme,
+    bool isDark,
   ) {
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: () {
-          _openTranscriptDialog(context, transcript);
-          Navigator.of(context).pop(); // Close dialog after opening transcript
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      transcript.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'view',
-                        child: Row(
-                          children: [
-                            Icon(Icons.visibility, size: 16),
-                            SizedBox(width: 8),
-                            Text('View'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'export',
-                        child: Row(
-                          children: [
-                            Icon(Icons.download, size: 16),
-                            SizedBox(width: 8),
-                            Text('Export'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 16, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) =>
-                        _handleMenuAction(context, transcript, value),
-                  ),
-                ],
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).pop(); // Close dialog after opening transcript
+        _openTranscriptDialog(context, transcript);
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        Colors.white.withAlpha(25),
+                        Colors.white.withAlpha(12),
+                      ]
+                    : [
+                        Colors.black.withAlpha(15),
+                        Colors.black.withAlpha(8),
+                      ],
               ),
-              const SizedBox(height: 8),
-
-              // Description
-              Text(
-                transcript.description,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(204),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withAlpha(30)
+                    : Colors.black.withAlpha(20),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withAlpha(50)
+                      : Colors.black.withAlpha(15),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-
-              // Stats
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  _buildStatChip(
-                    icon: Icons.timer,
-                    label: '${transcript.durationSeconds}s',
-                    theme: theme,
-                  ),
-                  _buildStatChip(
-                    icon: Icons.video_library,
-                    label: '${transcript.clips.length} clips',
-                    theme: theme,
-                  ),
-                  _buildStatChip(
-                    icon: Icons.photo_size_select_large,
-                    label: '${transcript.mediaWidth}×${transcript.mediaHeight}',
-                    theme: theme,
-                  ),
-                  _buildStatChip(
-                    icon: Icons.movie,
-                    label: '${transcript.clipLengthSeconds}s/clip',
-                    theme: theme,
-                  ),
-                  if (transcript.generateSpeech)
-                    _buildStatChip(
-                      icon: Icons.record_voice_over,
-                      label: 'Speech',
-                      theme: theme,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        transcript.title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  if (transcript.generateMusic)
-                    _buildStatChip(
-                      icon: Icons.music_note,
-                      label: 'Music',
-                      theme: theme,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              // Date
-              Text(
-                'Created ${_formatDate(transcript.createdAt)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(153),
+                    _buildGlassPopupMenu(context, transcript, isDark),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+
+                // Description
+                Text(
+                  transcript.description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 16),
+
+                // Stats
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildStatChip(
+                      icon: Icons.timer,
+                      label: '${transcript.durationSeconds}s',
+                      theme: theme,
+                      isDark: isDark,
+                    ),
+                    _buildStatChip(
+                      icon: Icons.video_library,
+                      label: '${transcript.clips.length} clips',
+                      theme: theme,
+                      isDark: isDark,
+                    ),
+                    _buildStatChip(
+                      icon: Icons.photo_size_select_large,
+                      label:
+                          '${transcript.mediaWidth}×${transcript.mediaHeight}',
+                      theme: theme,
+                      isDark: isDark,
+                    ),
+                    _buildStatChip(
+                      icon: Icons.movie,
+                      label: '${transcript.clipLengthSeconds}s/clip',
+                      theme: theme,
+                      isDark: isDark,
+                    ),
+                    if (transcript.generateSpeech)
+                      _buildStatChip(
+                        icon: Icons.record_voice_over,
+                        label: 'Speech',
+                        theme: theme,
+                        isDark: isDark,
+                      ),
+                    if (transcript.generateMusic)
+                      _buildStatChip(
+                        icon: Icons.music_note,
+                        label: 'Music',
+                        theme: theme,
+                        isDark: isDark,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Date
+                Text(
+                  'Created ${_formatDate(transcript.createdAt)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark ? Colors.white54 : Colors.black45,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -358,12 +486,28 @@ class TranscriptsDialog extends StatelessWidget {
     required IconData icon,
     required String label,
     required ThemeData theme,
+    required bool isDark,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer,
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  Colors.white.withAlpha(20),
+                  Colors.white.withAlpha(10),
+                ]
+              : [
+                  Colors.black.withAlpha(15),
+                  Colors.black.withAlpha(8),
+                ],
+        ),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(25)
+              : Colors.black.withAlpha(15),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -371,17 +515,231 @@ class TranscriptsDialog extends StatelessWidget {
           Icon(
             icon,
             size: 14,
-            color: theme.colorScheme.onSecondaryContainer,
+            color: isDark ? Colors.white70 : Colors.black54,
           ),
           const SizedBox(width: 4),
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSecondaryContainer,
+              color: isDark ? Colors.white70 : Colors.black54,
               fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGlassButton({
+    required VoidCallback onPressed,
+    required String label,
+    required bool isPrimary,
+    required bool isDark,
+    IconData? icon,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: isPrimary
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: isDark
+                          ? [
+                              const Color(0xFF10B981),
+                              const Color(0xFF059669),
+                            ]
+                          : [
+                              const Color(0xFF34D399),
+                              const Color(0xFF10B981),
+                            ],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: isDark
+                          ? [
+                              Colors.white.withAlpha(30),
+                              Colors.white.withAlpha(15),
+                            ]
+                          : [
+                              Colors.black.withAlpha(20),
+                              Colors.black.withAlpha(10),
+                            ],
+                    ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isPrimary
+                    ? (isDark
+                          ? Colors.white.withAlpha(100)
+                          : Colors.white.withAlpha(150))
+                    : (isDark
+                          ? Colors.white.withAlpha(30)
+                          : Colors.black.withAlpha(20)),
+                width: isPrimary ? 1.5 : 1,
+              ),
+              boxShadow: [
+                if (isPrimary)
+                  BoxShadow(
+                    color:
+                        (isDark
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF34D399))
+                            .withAlpha(100),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withAlpha(50)
+                      : Colors.black.withAlpha(15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: isPrimary
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black54),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isPrimary
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black54),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required String tooltip,
+    required bool isDark,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  Colors.white.withAlpha(20),
+                  Colors.white.withAlpha(10),
+                ]
+              : [
+                  Colors.black.withAlpha(15),
+                  Colors.black.withAlpha(5),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(30)
+              : Colors.black.withAlpha(20),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: isDark ? Colors.white70 : Colors.black54,
+          size: 20,
+        ),
+        tooltip: tooltip,
+        onPressed: onPressed,
+        splashRadius: 20,
+      ),
+    );
+  }
+
+  Widget _buildGlassPopupMenu(
+    BuildContext context,
+    VideoTranscript transcript,
+    bool isDark,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  Colors.white.withAlpha(20),
+                  Colors.white.withAlpha(10),
+                ]
+              : [
+                  Colors.black.withAlpha(15),
+                  Colors.black.withAlpha(5),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(30)
+              : Colors.black.withAlpha(20),
+        ),
+      ),
+      child: PopupMenuButton<String>(
+        icon: Icon(
+          Icons.more_vert,
+          color: isDark ? Colors.white70 : Colors.black54,
+          size: 20,
+        ),
+        itemBuilder: (context) => [
+          const PopupMenuItem(
+            value: 'view',
+            child: Row(
+              children: [
+                Icon(Icons.visibility, size: 16),
+                SizedBox(width: 8),
+                Text('View'),
+              ],
+            ),
+          ),
+          const PopupMenuItem(
+            value: 'export',
+            child: Row(
+              children: [
+                Icon(Icons.download, size: 16),
+                SizedBox(width: 8),
+                Text('Export'),
+              ],
+            ),
+          ),
+          const PopupMenuDivider(),
+          const PopupMenuItem(
+            value: 'delete',
+            child: Row(
+              children: [
+                Icon(Icons.delete, size: 16, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Delete', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
+        onSelected: (value) => _handleMenuAction(context, transcript, value),
       ),
     );
   }

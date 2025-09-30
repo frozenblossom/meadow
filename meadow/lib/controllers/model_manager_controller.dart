@@ -232,8 +232,14 @@ class ModelManagerController extends GetxController {
 
       final progress = downloadedWeights.length / model.weights.length;
 
-      // Fetch file sizes dynamically if not available
-      final updatedWeights = await _fetchWeightFileSizes(model.weights);
+      // Only fetch file sizes if they're missing AND not currently downloading
+      final needsSizeUpdate = model.weights.any((w) => w.fileSize == null);
+      final isCurrentlyDownloading = _downloadProgress.containsKey(model.id);
+
+      List<ModelWeight> updatedWeights = model.weights;
+      if (needsSizeUpdate && !isCurrentlyDownloading) {
+        updatedWeights = await _fetchWeightFileSizes(model.weights);
+      }
 
       _availableModels[i] = model.copyWith(
         downloadStatus: status,
@@ -289,6 +295,7 @@ class ModelManagerController extends GetxController {
       if (result != null) {
         _comfyUIDirectory.value = result;
         await _saveSettings();
+        // Only update status if directory actually changed
         await _updateModelDownloadStatus();
         _errorMessage.value = '';
       }
@@ -333,7 +340,8 @@ class ModelManagerController extends GetxController {
       );
 
       if (success) {
-        await _updateModelDownloadStatus();
+        // Don't immediately update status here - it will be updated when needed
+        // await _updateModelDownloadStatus();
       }
     } catch (e) {
       _errorMessage.value = 'Download failed: $e';
@@ -345,7 +353,7 @@ class ModelManagerController extends GetxController {
 
   /// Cancel download for a model
   void cancelDownload(String modelId) {
-    _downloadService.cancelDownload(modelId);
+    _downloadService.cancelModelDownload(modelId);
     _downloadProgress.remove(modelId);
     _downloadStatus.remove(modelId);
     _isDownloading.value = false;

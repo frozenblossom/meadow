@@ -48,6 +48,10 @@ class ModelDownloadService extends GetxService {
   final Dio _dio = Dio();
   final Map<String, CancelToken> _activeTasks = {};
   final Map<String, DateTime> _lastProgressUpdate = {};
+  final Map<String, List<String>> _modelToTasks = {};
+  final Map<String, bool> _cancelledModels = {};
+  final Map<String, List<double>> _speedHistory = {};
+  final Map<String, int> _lastReceivedBytes = {};
 
   @override
   void onInit() {
@@ -65,6 +69,10 @@ class ModelDownloadService extends GetxService {
     Function()? onCompleted,
   }) async {
     try {
+      // Reset cancellation flag for this model
+      _cancelledModels[model.id] = false;
+      _modelToTasks[model.id] = [];
+
       // Validate ComfyUI directory
       final comfyUIDir = Directory(comfyUIDirectory);
       if (!await comfyUIDir.exists()) {
@@ -74,18 +82,51 @@ class ModelDownloadService extends GetxService {
 
       // Download each weight file
       for (int i = 0; i < model.weights.length; i++) {
+        // Check if model download was cancelled
+        if (_cancelledModels[model.id] == true) {
+          onError?.call('Download cancelled');
+          return false;
+        }
+
         final weight = model.weights[i];
+        final taskId = '${weight.dir}_${weight.filename}';
+        _modelToTasks[model.id]!.add(taskId);
+
         final success = await downloadWeight(
           weight: weight,
           comfyUIDirectory: comfyUIDirectory,
+          modelId: model.id,
           onProgress: (progress) {
+            // Check if cancelled during progress update
+            if (_cancelledModels[model.id] == true) {
+              return;
+            }
+
+            // Calculate overall model progress based on file sizes
+            final totalModelBytes = model.weights.fold<int>(
+              0,
+              (sum, w) => sum + (w.fileSize ?? 0),
+            );
+            int downloadedBytes = 0;
+
+            // Sum bytes from completed files
+            for (int j = 0; j < i; j++) {
+              downloadedBytes += model.weights[j].fileSize ?? 0;
+            }
+
+            // Add current file progress
+            downloadedBytes += progress.downloadedBytes;
+
+            final overallPercentage = totalModelBytes > 0
+                ? (downloadedBytes / totalModelBytes) * 100
+                : (i + progress.percentage / 100) / model.weights.length * 100;
+
             // Calculate overall model progress
             final overallProgress = DownloadProgress(
               filename: model.name,
-              downloadedBytes: progress.downloadedBytes,
-              totalBytes: progress.totalBytes,
-              percentage:
-                  (i + progress.percentage / 100) / model.weights.length,
+              downloadedBytes: downloadedBytes,
+              totalBytes: totalModelBytes,
+              percentage: overallPercentage,
               speed: progress.speed,
               status:
                   'Downloading ${weight.filename} (${i + 1}/${model.weights.length})',
@@ -94,15 +135,21 @@ class ModelDownloadService extends GetxService {
           },
           onError: onError,
         );
-
         if (!success) {
           return false;
         }
       }
 
+      // Clean up tracking
+      _modelToTasks.remove(model.id);
+      _cancelledModels.remove(model.id);
+
       onCompleted?.call();
       return true;
     } catch (e) {
+      // Clean up tracking on error
+      _modelToTasks.remove(model.id);
+      _cancelledModels.remove(model.id);
       onError?.call('Download failed: $e');
       return false;
     }
@@ -114,6 +161,7 @@ class ModelDownloadService extends GetxService {
     required String comfyUIDirectory,
     required Function(DownloadProgress) onProgress,
     Function(String error)? onError,
+    String? modelId,
   }) async {
     final taskId = '${weight.dir}_${weight.filename}';
 
@@ -153,6 +201,12 @@ class ModelDownloadService extends GetxService {
         startByte = await tempFile.length();
       }
 
+      // Check if model download was cancelled before starting
+      if (modelId != null && _cancelledModels[modelId] == true) {
+        onError?.call('Download cancelled');
+        return false;
+      }
+
       // Setup cancel token
       final cancelToken = CancelToken();
       _activeTasks[taskId] = cancelToken;
@@ -181,6 +235,12 @@ class ModelDownloadService extends GetxService {
           headers: startByte > 0 ? {'Range': 'bytes=$startByte-'} : null,
         ),
         onReceiveProgress: (received, total) {
+          // Check if model download was cancelled
+          if (modelId != null && _cancelledModels[modelId] == true) {
+            cancelToken.cancel('Model download cancelled');
+            return;
+          }
+
           final now = DateTime.now();
           final lastUpdate = _lastProgressUpdate[taskId];
 
@@ -195,13 +255,30 @@ class ModelDownloadService extends GetxService {
                 ? (actualReceived / actualTotal) * 100
                 : 0.0;
 
-            // Calculate speed (bytes per second)
+            // Calculate speed with moving average for stability
             double speed = 0.0;
             if (lastUpdate != null) {
               final timeDiff =
                   now.difference(lastUpdate).inMilliseconds / 1000.0;
               if (timeDiff > 0) {
-                speed = received / timeDiff;
+                final currentSpeed = received / timeDiff;
+
+                // Maintain speed history for moving average
+                if (!_speedHistory.containsKey(taskId)) {
+                  _speedHistory[taskId] = [];
+                }
+
+                _speedHistory[taskId]!.add(currentSpeed);
+
+                // Keep only last 10 speed readings for moving average
+                if (_speedHistory[taskId]!.length > 10) {
+                  _speedHistory[taskId]!.removeAt(0);
+                }
+
+                // Calculate moving average speed
+                speed =
+                    _speedHistory[taskId]!.reduce((a, b) => a + b) /
+                    _speedHistory[taskId]!.length;
               }
             }
 
@@ -254,6 +331,8 @@ class ModelDownloadService extends GetxService {
     } finally {
       _activeTasks.remove(taskId);
       _lastProgressUpdate.remove(taskId);
+      _speedHistory.remove(taskId);
+      _lastReceivedBytes.remove(taskId);
     }
   }
 
@@ -262,6 +341,23 @@ class ModelDownloadService extends GetxService {
     final cancelToken = _activeTasks[taskId];
     if (cancelToken != null && !cancelToken.isCancelled) {
       cancelToken.cancel('User cancelled');
+    }
+  }
+
+  /// Cancel model download by model ID
+  void cancelModelDownload(String modelId) {
+    // Mark model as cancelled
+    _cancelledModels[modelId] = true;
+
+    // Cancel all tasks for this model
+    final tasks = _modelToTasks[modelId];
+    if (tasks != null) {
+      for (final taskId in tasks) {
+        final cancelToken = _activeTasks[taskId];
+        if (cancelToken != null && !cancelToken.isCancelled) {
+          cancelToken.cancel('Model download cancelled');
+        }
+      }
     }
   }
 
@@ -274,6 +370,10 @@ class ModelDownloadService extends GetxService {
     }
     _activeTasks.clear();
     _lastProgressUpdate.clear();
+    _modelToTasks.clear();
+    _cancelledModels.clear();
+    _speedHistory.clear();
+    _lastReceivedBytes.clear();
   }
 
   /// Check if a weight file exists in the ComfyUI directory
