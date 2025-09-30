@@ -45,7 +45,7 @@ class WorkflowTemplateService {
       } else if (value is String) {
         replacementValue = value.replaceAll('"', '\\"');
       } else if (value is Uint8List) {
-        replacementValue = '"${imageBase64(value)}"';
+        replacementValue = '${imageBase64(value)}';
       } else if (value is List || value is Map) {
         replacementValue = jsonEncode(value);
       } else {

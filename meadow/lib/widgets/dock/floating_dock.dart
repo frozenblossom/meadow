@@ -1,7 +1,22 @@
 import 'dart:ui';
+import 'dart:math';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:meadow/controllers/workspace_controller.dart';
+import 'package:meadow/integrations/comfyui/comfyui_service.dart';
+import 'package:meadow/integrations/comfyui/predefined_workflows/simple_checkpoint.dart';
+import 'package:meadow/integrations/comfyui/predefined_workflows/wan_i2v.dart';
+import 'package:meadow/integrations/comfyui/predefined_workflows/acestep_workflow.dart';
+import 'package:meadow/integrations/comfyui/predefined_workflows/tts_workflow.dart';
 import 'package:meadow/models/menu_item.dart';
+import 'package:meadow/services/prompt_preferences_service.dart';
+import 'package:meadow/widgets/dock/options/image_options_dialog.dart';
+import 'package:meadow/widgets/dock/options/music_options_dialog.dart';
+import 'package:meadow/widgets/dock/options/speech_options_dialog.dart';
+import 'package:meadow/widgets/dock/options/video_options_dialog.dart';
 import 'package:meadow/widgets/pages/tab_list.dart';
 
 enum MediaType {
@@ -34,6 +49,30 @@ class _FloatingDockState extends State<FloatingDock> {
   double _dockWidth = 600.0; // Default width
   static const double _minWidth = 400.0;
   bool _isResizing = false;
+
+  // Generation parameters for each media type
+  // Image parameters
+  int? _imageWidth;
+  int? _imageHeight;
+  int? _imageSeed;
+  String _imageModel = 'dreamshaper_lightning.safetensors';
+
+  // Video parameters
+  int? _videoWidth;
+  int? _videoHeight;
+  int? _videoDuration;
+  int _videoFps = 24;
+  int? _videoSeed;
+  File? _referenceImage;
+
+  // Music parameters
+  String _musicGenre = 'melodic, uplifting';
+  int _musicLength = 95;
+  File? _referenceAudio;
+
+  // Speech parameters
+  File? _speechReferenceAudio;
+  String _speechReferenceText = '';
 
   // Map media types to their corresponding menu items
   Map<MediaType, MenuItem> get _mediaTypeMenuItems {
@@ -223,7 +262,7 @@ class _FloatingDockState extends State<FloatingDock> {
           size: 24,
         ),
         onPressed: () {
-          // TODO: Options functionality to be implemented later
+          _showOptionsDialog();
         },
         tooltip: 'Options',
       ),
@@ -278,10 +317,10 @@ class _FloatingDockState extends State<FloatingDock> {
       ),
       child: ElevatedButton(
         onPressed: canGenerate
-            ? () {
+            ? () async {
                 final prompt = _promptController.text.trim();
                 if (prompt.isNotEmpty) {
-                  widget.onPromptSubmitted?.call(prompt);
+                  await _handleGeneration(prompt);
                 }
               }
             : null,
@@ -586,5 +625,282 @@ class _FloatingDockState extends State<FloatingDock> {
         ),
       ],
     );
+  }
+
+  // Comprehensive generation handler for all media types
+  Future<void> _handleGeneration(String prompt) async {
+    try {
+      final workspace = Get.find<WorkspaceController>().currentWorkspace.value;
+
+      // Save prompt preferences
+      switch (_selectedMediaType) {
+        case MediaType.image:
+          await _generateImage(prompt, workspace);
+          break;
+        case MediaType.video:
+          await _generateVideo(prompt, workspace);
+          break;
+        case MediaType.music:
+          await _generateMusic(prompt, workspace);
+          break;
+        case MediaType.speech:
+          await _generateSpeech(prompt, workspace);
+          break;
+        case MediaType.transcript:
+          // Transcript generation would be handled differently
+          // as it typically involves processing existing audio/video
+          Get.snackbar(
+            'Info',
+            'Transcript generation requires audio/video input',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          break;
+      }
+
+      // Call the original callback if provided
+      widget.onPromptSubmitted?.call(prompt);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to start ${_selectedMediaType.name} generation: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> _generateImage(String prompt, workspace) async {
+    // Save prompt preference
+    await PromptPreferencesService.instance.saveImagePrompt(prompt);
+
+    // Use custom parameters or defaults
+    final seed = _imageSeed ?? Random().nextInt(1 << 32);
+    final width = _imageWidth ?? workspace?.defaultWidth ?? 1024;
+    final height = _imageHeight ?? workspace?.defaultHeight ?? 1024;
+
+    await generateAsset(
+      ext: 'png',
+      workflow: await simpleCheckpointWorkflow(
+        prompt: prompt,
+        height: height,
+        width: width,
+        seed: seed,
+      ),
+      metadata: {
+        'type': 'image',
+        'prompt': prompt,
+        'width': width,
+        'height': height,
+        'seed': seed,
+        'model': _imageModel,
+        'created_at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  Future<void> _generateVideo(String prompt, workspace) async {
+    // Save prompt preference
+    await PromptPreferencesService.instance.saveVideoPrompt(prompt);
+
+    // Use custom parameters or defaults
+    final seed =
+        _videoSeed ?? DateTime.now().millisecondsSinceEpoch % 2147483647;
+    final width = _videoWidth ?? workspace?.defaultWidth ?? 1280;
+    final height = _videoHeight ?? workspace?.defaultHeight ?? 704;
+    final durationSeconds =
+        _videoDuration ?? workspace?.videoDurationSeconds ?? 5;
+    final fps = _videoFps;
+    final frameCount = durationSeconds * fps;
+
+    // Get reference image bytes if available
+    Uint8List? refImageBytes;
+    if (_referenceImage != null) {
+      try {
+        refImageBytes = await _referenceImage!.readAsBytes();
+      } catch (e) {
+        Get.snackbar('Warning', 'Could not load reference image: $e');
+      }
+    }
+
+    await generateAsset(
+      ext: 'mp4',
+      workflow: await videoWorkflow(
+        prompt: prompt,
+        seed: seed,
+        width: width,
+        height: height,
+        durationSeconds: durationSeconds,
+        fps: fps,
+        refImage: refImageBytes,
+      ),
+      metadata: {
+        'type': 'video',
+        'prompt': prompt,
+        'seed': seed,
+        'width': width,
+        'height': height,
+        'duration_seconds': durationSeconds,
+        'fps': fps,
+        'frame_count': frameCount,
+        'reference_image': _referenceImage?.path,
+        'created_at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  Future<void> _generateMusic(String prompt, workspace) async {
+    // Use custom parameters
+    final workflow = await aceStepWorkflow(
+      lyrics: prompt,
+      genre: _referenceAudio != null ? null : _musicGenre,
+      referenceAudioPath: _referenceAudio?.path,
+      audioLength: _musicLength,
+    );
+
+    await generateAsset(
+      workflow: workflow,
+      ext: 'mp3',
+      metadata: {
+        'type': 'music',
+        'prompt': prompt,
+        'genre': _referenceAudio != null ? null : _musicGenre,
+        'audio_length': _musicLength,
+        'reference_audio': _referenceAudio?.path,
+        'created_at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  Future<void> _generateSpeech(String prompt, workspace) async {
+    // Use custom parameters for voice cloning if available
+    final workflow = await ttsWorkflow(
+      text: prompt,
+      referenceAudioPath: _speechReferenceAudio?.path,
+      referenceText: _speechReferenceText.isEmpty ? null : _speechReferenceText,
+    );
+
+    await generateAsset(
+      workflow: workflow,
+      ext: 'mp3',
+      metadata: {
+        'type': 'speech',
+        'prompt': prompt,
+        'reference_audio': _speechReferenceAudio?.path,
+        'reference_text': _speechReferenceText.isEmpty
+            ? null
+            : _speechReferenceText,
+        'created_at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  // Show options dialog based on selected media type
+  void _showOptionsDialog() {
+    switch (_selectedMediaType) {
+      case MediaType.image:
+        _showImageOptionsDialog();
+        break;
+      case MediaType.video:
+        _showVideoOptionsDialog();
+        break;
+      case MediaType.music:
+        _showMusicOptionsDialog();
+        break;
+      case MediaType.speech:
+        _showSpeechOptionsDialog();
+        break;
+      case MediaType.transcript:
+        Get.snackbar(
+          'Info',
+          'Transcript generation requires audio/video input files',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        break;
+    }
+  }
+
+  void _showImageOptionsDialog() async {
+    final workspace = Get.find<WorkspaceController>().currentWorkspace.value;
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => ImageOptionsDialog(
+        initialWidth: _imageWidth ?? workspace?.defaultWidth ?? 1024,
+        initialHeight: _imageHeight ?? workspace?.defaultHeight ?? 1024,
+        initialSeed: _imageSeed,
+        initialModel: _imageModel,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _imageWidth = result['width'];
+        _imageHeight = result['height'];
+        _imageSeed = result['seed'];
+        _imageModel = result['model'];
+      });
+    }
+  }
+
+  void _showVideoOptionsDialog() async {
+    final workspace = Get.find<WorkspaceController>().currentWorkspace.value;
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => VideoOptionsDialog(
+        initialWidth: _videoWidth ?? workspace?.defaultWidth ?? 1280,
+        initialHeight: _videoHeight ?? workspace?.defaultHeight ?? 704,
+        initialDuration: _videoDuration ?? workspace?.videoDurationSeconds ?? 5,
+        initialFps: _videoFps,
+        initialSeed: _videoSeed,
+        initialReferenceImage: _referenceImage,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _videoWidth = result['width'];
+        _videoHeight = result['height'];
+        _videoDuration = result['duration'];
+        _videoFps = result['fps'];
+        _videoSeed = result['seed'];
+        _referenceImage = result['referenceImage'];
+      });
+    }
+  }
+
+  void _showMusicOptionsDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => MusicOptionsDialog(
+        initialGenre: _musicGenre,
+        initialLength: _musicLength,
+        initialReferenceAudio: _referenceAudio,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _musicGenre = result['genre'];
+        _musicLength = result['length'];
+        _referenceAudio = result['referenceAudio'];
+      });
+    }
+  }
+
+  void _showSpeechOptionsDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => SpeechOptionsDialog(
+        initialReferenceAudio: _speechReferenceAudio,
+        initialReferenceText: _speechReferenceText,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _speechReferenceAudio = result['referenceAudio'];
+        _speechReferenceText = result['referenceText'];
+      });
+    }
   }
 }

@@ -9,7 +9,7 @@ import 'package:meadow/widgets/dialogs/theme_settings_dialog.dart';
 import 'package:meadow/widgets/dialogs/app_settings_dialog.dart';
 import 'package:meadow/widgets/dialogs/transcripts_dialog.dart';
 import 'package:meadow/widgets/pages/assets_tab.dart';
-import 'package:meadow/widgets/floating_dock.dart';
+import 'package:meadow/widgets/dock/floating_dock.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MainLayout extends StatefulWidget {
