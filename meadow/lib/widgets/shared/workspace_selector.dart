@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:meadow/controllers/workspace_controller.dart';
@@ -6,7 +5,12 @@ import 'package:meadow/models/workspace.dart';
 import 'package:meadow/widgets/dialogs/workspace_form_dialog.dart';
 
 class WorkspaceSelector extends StatefulWidget {
-  const WorkspaceSelector({super.key});
+  final bool showInAppBar;
+
+  const WorkspaceSelector({
+    super.key,
+    this.showInAppBar = false,
+  });
 
   @override
   State<WorkspaceSelector> createState() => _WorkspaceSelectorState();
@@ -246,135 +250,170 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
 
     if (isLoading) {
       return Container(
-        height: 60,
+        height: widget.showInAppBar ? 40 : 60,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Obx(
-                () {
-                  // Update the controller text when the current workspace changes
-                  final currentWorkspace = controller.currentWorkspace.value;
-                  _dropdownController.text = currentWorkspace?.name ?? '';
+    // AppBar layout - more compact
+    if (widget.showInAppBar) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 280),
 
-                  return Expanded(
-                    child: Container(
-                      child: DropdownMenu<Workspace>(
-                        width: 280,
-                        controller: _dropdownController,
-                        inputDecorationTheme: InputDecorationTheme(
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          hintStyle: TextStyle(
-                            color: isDark
-                                ? Colors.white.withAlpha(128)
-                                : Colors.black.withAlpha(128),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        textStyle: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                        dropdownMenuEntries: controller.availableWorkspaces.map(
-                          (ws) {
-                            return DropdownMenuEntry(
-                              value: ws,
-                              label: ws.name,
-                              labelWidget: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    ws.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      if (ws.defaultWidth != null &&
-                                          ws.defaultHeight != null)
-                                        Text(
-                                          ws.dimensionString,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      if (ws.defaultWidth != null &&
-                                          ws.defaultHeight != null)
-                                        Text(
-                                          ' • ',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      Text(
-                                        '${ws.videoDurationSeconds}s video',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              trailingIcon: _buildWorkspaceActions(ws),
-                            );
-                          },
-                        ).toList(),
-                        onSelected: (val) {
-                          if (val != null) {
-                            controller.setWorkspace(val);
-                          }
-                        },
-                        hintText: 'Select Workspace',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: _buildWorkspaceDropdown(
+                  controller,
+                  isDark,
+                  isCompact: true,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _buildCompactIconButton(
+            icon: Icons.add,
+            tooltip: 'Create New Workspace',
+            onPressed: _createNewWorkspace,
+            isDark: isDark,
+          ),
+          const SizedBox(width: 6),
+          _buildCompactIconButton(
+            icon: Icons.refresh,
+            tooltip: 'Refresh Workspaces',
+            onPressed: _refreshWorkspaces,
+            isDark: isDark,
+          ),
+        ],
+      );
+    }
+
+    // Standard layout - original design
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: _buildWorkspaceDropdown(controller, isDark),
+          ),
+          const SizedBox(width: 12),
+          _buildGlassIconButton(
+            icon: Icons.add,
+            tooltip: 'Create New Workspace',
+            onPressed: _createNewWorkspace,
+            isDark: isDark,
+          ),
+          const SizedBox(width: 8),
+          _buildGlassIconButton(
+            icon: Icons.refresh,
+            tooltip: 'Refresh Workspaces',
+            onPressed: _refreshWorkspaces,
+            isDark: isDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorkspaceDropdown(
+    WorkspaceController controller,
+    bool isDark, {
+    bool isCompact = false,
+  }) {
+    return Obx(
+      () {
+        // Update the controller text when the current workspace changes
+        final currentWorkspace = controller.currentWorkspace.value;
+        _dropdownController.text = currentWorkspace?.name ?? '';
+
+        return DropdownMenu<Workspace>(
+          controller: _dropdownController,
+          textStyle: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: isCompact ? 14 : 16,
+          ),
+          dropdownMenuEntries: controller.availableWorkspaces.map(
+            (ws) {
+              return DropdownMenuEntry(
+                value: ws,
+                label: ws.name,
+                labelWidget: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ws.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(width: 12),
-              _buildGlassIconButton(
-                icon: Icons.add,
-                tooltip: 'Create New Workspace',
-                onPressed: _createNewWorkspace,
-                isDark: isDark,
-              ),
-              const SizedBox(width: 8),
-              _buildGlassIconButton(
-                icon: Icons.refresh,
-                tooltip: 'Refresh Workspaces',
-                onPressed: _refreshWorkspaces,
-                isDark: isDark,
-              ),
-            ],
+                    if (!isCompact)
+                      Row(
+                        children: [
+                          if (ws.defaultWidth != null &&
+                              ws.defaultHeight != null)
+                            Text(
+                              ws.dimensionString,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          if (ws.defaultWidth != null &&
+                              ws.defaultHeight != null)
+                            Text(
+                              ' • ',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          Text(
+                            '${ws.videoDurationSeconds}s video',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                trailingIcon: _buildWorkspaceActions(ws),
+              );
+            },
+          ).toList(),
+          onSelected: (val) {
+            if (val != null) {
+              controller.setWorkspace(val);
+            }
+          },
+          hintText: 'Select Workspace',
+          // Make border invisible/transparent
+          inputDecorationTheme: const InputDecorationTheme(
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -422,6 +461,48 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
         tooltip: tooltip,
         onPressed: onPressed,
         splashRadius: 20,
+      ),
+    );
+  }
+
+  Widget _buildCompactIconButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+    required bool isDark,
+  }) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  Colors.white.withAlpha(15),
+                  Colors.white.withAlpha(8),
+                ]
+              : [
+                  Colors.black.withAlpha(10),
+                  Colors.black.withAlpha(5),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(20)
+              : Colors.black.withAlpha(15),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: isDark ? Colors.white70 : Colors.black54,
+          size: 16,
+        ),
+        tooltip: tooltip,
+        onPressed: onPressed,
+        splashRadius: 16,
+        padding: EdgeInsets.zero,
       ),
     );
   }

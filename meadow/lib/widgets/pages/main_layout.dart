@@ -10,6 +10,7 @@ import 'package:meadow/widgets/dialogs/app_settings_dialog.dart';
 import 'package:meadow/widgets/dialogs/transcripts_dialog.dart';
 import 'package:meadow/widgets/pages/assets_tab.dart';
 import 'package:meadow/widgets/dock/floating_dock.dart';
+import 'package:meadow/widgets/shared/workspace_selector.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MainLayout extends StatefulWidget {
@@ -62,27 +63,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             // Animated background particles/orbs
             ..._buildBackgroundOrbs(isDark),
 
-            // Main content area with glass effect
-            Positioned.fill(
-              child: Container(
-                margin: const EdgeInsets.all(8),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.black.withAlpha(25)
-                          : Colors.white.withAlpha(25),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withAlpha(25)
-                            : Colors.black.withAlpha(12),
-                      ),
-                    ),
-                    child: const AssetsTab(),
-                  ),
-                ),
-              ),
+            // Main content area
+            const Positioned.fill(
+              child: AssetsTab(),
             ),
 
             // Floating dock at the bottom
@@ -142,34 +125,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             // Animated background particles/orbs
             ..._buildBackgroundOrbs(isDark),
 
-            // Main content area with glass effect
-            Positioned.fill(
+            // Main content area
+            const Positioned.fill(
               top: 56, // Leave space for app bar
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.black.withAlpha(25)
-                        : Colors.white.withAlpha(25),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withAlpha(25)
-                          : Colors.black.withAlpha(12),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? Colors.black.withAlpha(75)
-                            : Colors.black.withAlpha(25),
-                        blurRadius: 30,
-                        offset: const Offset(0, 15),
-                      ),
-                    ],
-                  ),
-                  child: const AssetsTab(),
-                ),
-              ),
+              child: AssetsTab(),
             ),
 
             // Floating dock at the bottom
@@ -224,11 +183,24 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       backgroundColor: Colors.transparent,
       elevation: theme.appBarTheme.elevation ?? 1,
       centerTitle: false,
-      title: Text(
-        'Meadow',
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
+      title: Row(
+        children: [
+          Text(
+            'Meadow',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          // Add WorkspaceSelector on desktop
+          if (!isMobile) ...[
+            const SizedBox(width: 32),
+            const Expanded(
+              child: WorkspaceSelector(
+                showInAppBar: true,
+              ),
+            ),
+          ],
+        ],
       ),
       actions: _buildAppBarActions(context, theme, isDark, isMobile),
     );

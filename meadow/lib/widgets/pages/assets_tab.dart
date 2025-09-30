@@ -106,17 +106,28 @@ class AssetsTab extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Workspace Selector Row with glass effect
-            const WorkspaceSelector(),
+            // Workspace Selector Row - only show on mobile
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isMobile = constraints.maxWidth < 600;
+                return isMobile
+                    ? const WorkspaceSelector()
+                    : const SizedBox.shrink();
+              },
+            ),
 
             // Assets controls with responsive design
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isMobile = constraints.maxWidth < 600;
-
-                  return Row(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isMobile = constraints.maxWidth < 600;
+                return Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: isMobile
+                        ? 8.0
+                        : 16.0, // More spacing on desktop since WorkspaceSelector is in AppBar
+                  ),
+                  child: Row(
                     children: [
                       _buildGlassAddButton(context, isDark),
                       const SizedBox(width: 16),
@@ -125,9 +136,9 @@ class AssetsTab extends StatelessWidget {
                           ? _buildMobileAssetTypeDropdown(controller, isDark)
                           : _buildDesktopAssetTypeButtons(controller),
                     ],
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
             Expanded(
               child: DropTarget(
@@ -155,7 +166,7 @@ class AssetsTab extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(24),
                         child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                           child: Container(
                             padding: const EdgeInsets.all(32),
                             margin: const EdgeInsets.all(32),
@@ -287,7 +298,7 @@ class AssetsTab extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(

@@ -29,8 +29,8 @@ class AssetTypeButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: BackdropFilter(
             filter: ImageFilter.blur(
-              sigmaX: selected ? 20 : 15,
-              sigmaY: selected ? 20 : 15,
+              sigmaX: selected ? 15 : 10,
+              sigmaY: selected ? 15 : 10,
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
