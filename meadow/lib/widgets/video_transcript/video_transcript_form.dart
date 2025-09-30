@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:meadow/controllers/document_tabs_controller.dart';
 import 'package:meadow/controllers/video_transcript_controller.dart';
 import 'package:meadow/models/video_transcript.dart';
+import 'package:meadow/widgets/video_transcript/video_transcript_viewer.dart';
 
 class VideoTranscriptForm extends StatefulWidget {
   final VideoTranscript?
@@ -466,9 +466,22 @@ class _VideoTranscriptFormState extends State<VideoTranscriptForm> {
     );
 
     if (transcript != null && mounted) {
-      // Open transcript in a new tab and close the creator
-      final tabsController = Get.find<DocumentsTabsController>();
-      tabsController.openVideoTranscriptTab(transcript);
+      // Show transcript in dialog and close the creator
+      showDialog(
+        context: context,
+        builder: (context) => Dialog.fullscreen(
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(transcript.title),
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: VideoTranscriptViewer(transcript: transcript),
+          ),
+        ),
+      );
       Navigator.of(context).pop(); // Close the creator dialog/page
     }
   }

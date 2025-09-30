@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:meadow/controllers/document_tabs_controller.dart';
 import 'package:meadow/controllers/workspace_controller.dart';
 import 'package:meadow/enums/asset_status.dart';
 import 'package:meadow/enums/asset_type.dart';
@@ -10,6 +9,7 @@ import 'package:meadow/models/asset.dart';
 import 'package:meadow/models/local_asset.dart';
 import 'package:meadow/models/workspace.dart';
 import 'package:meadow/widgets/shared/generation_metadata_viewer.dart';
+import 'package:meadow/widgets/editor/media_detail.dart';
 
 class AssetGridItem extends StatefulWidget {
   final Asset asset;
@@ -56,17 +56,8 @@ class _AssetGridItemState extends State<AssetGridItem> {
     return InkWell(
       onTap: status == AssetStatus.completed
           ? () {
-              try {
-                final tabsController = Get.find<DocumentsTabsController>();
-                tabsController.openTab(asset);
-              } catch (e) {
-                // If controller is not found, show a message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Document tabs controller not available'),
-                  ),
-                );
-              }
+              // Open asset in modal dialog
+              _openAssetDialog(context, asset);
             }
           : null,
       child: GridTile(
@@ -616,6 +607,24 @@ class _AssetGridItemState extends State<AssetGridItem> {
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
+  void _openAssetDialog(BuildContext context, Asset asset) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(asset.displayName),
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: MediaDetailTab(asset: asset),
+        ),
+      ),
+    );
   }
 
   String _formatFileSize(int bytes) {

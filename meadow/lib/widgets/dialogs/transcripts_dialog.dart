@@ -5,47 +5,167 @@ import 'package:meadow/models/video_transcript.dart';
 import 'package:meadow/widgets/video_transcript/video_transcript_form.dart';
 import 'package:meadow/widgets/video_transcript/video_transcript_viewer.dart';
 
-class VideoTranscriptListTab extends StatelessWidget {
-  const VideoTranscriptListTab({super.key});
+class TranscriptsDialog extends StatelessWidget {
+  const TranscriptsDialog({super.key});
+
+  void _openTranscriptDialog(BuildContext context, VideoTranscript transcript) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(transcript.title),
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: VideoTranscriptViewer(transcript: transcript),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(VideoTranscriptController());
     final theme = Theme.of(context);
 
-    return Scaffold(
-      body: Obx(() {
-        if (controller.transcripts.isEmpty) {
-          return _buildEmptyState(context, theme);
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: controller.transcripts.length,
-          itemBuilder: (context, index) {
-            final transcript = controller.transcripts[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildTranscriptCard(context, transcript, theme),
-            );
-          },
-        );
-      }),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const VideoTranscriptForm(),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(75),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('New Transcript'),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.dividerColor.withAlpha(50),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.video_library,
+                    color: theme.colorScheme.primary,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Video Transcripts',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+            ),
+
+            // Content
+            Expanded(
+              child: Obx(() {
+                if (controller.transcripts.isEmpty) {
+                  return _buildEmptyState(context, theme, controller);
+                }
+
+                return Column(
+                  children: [
+                    // Add new transcript button
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const VideoTranscriptForm(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text('New Transcript'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '${controller.transcripts.length} transcript${controller.transcripts.length == 1 ? '' : 's'}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withAlpha(
+                                180,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Transcripts list
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: controller.transcripts.length,
+                        itemBuilder: (context, index) {
+                          final transcript = controller.transcripts[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildTranscriptCard(
+                              context,
+                              transcript,
+                              theme,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, ThemeData theme) {
+  Widget _buildEmptyState(
+    BuildContext context,
+    ThemeData theme,
+    VideoTranscriptController controller,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -106,6 +226,7 @@ class VideoTranscriptListTab extends StatelessWidget {
       child: InkWell(
         onTap: () {
           _openTranscriptDialog(context, transcript);
+          Navigator.of(context).pop(); // Close dialog after opening transcript
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -171,7 +292,7 @@ class VideoTranscriptListTab extends StatelessWidget {
               Text(
                 transcript.description,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(200),
+                  color: theme.colorScheme.onSurface.withAlpha(204),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -275,6 +396,7 @@ class VideoTranscriptListTab extends StatelessWidget {
     switch (action) {
       case 'view':
         _openTranscriptDialog(context, transcript);
+        Navigator.of(context).pop(); // Close dialog after opening transcript
         break;
       case 'export':
         controller.exportTranscript(transcript.id).then((path) {
@@ -316,24 +438,6 @@ class VideoTranscriptListTab extends StatelessWidget {
             child: const Text('Delete'),
           ),
         ],
-      ),
-    );
-  }
-
-  void _openTranscriptDialog(BuildContext context, VideoTranscript transcript) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog.fullscreen(
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(transcript.title),
-            leading: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          body: VideoTranscriptViewer(transcript: transcript),
-        ),
       ),
     );
   }

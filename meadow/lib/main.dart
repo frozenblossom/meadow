@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:meadow/controllers/app_settings_controller.dart';
-import 'package:meadow/controllers/document_tabs_controller.dart';
 import 'package:meadow/controllers/tasks_controller.dart';
 import 'package:meadow/controllers/theme_controller.dart';
 import 'package:meadow/controllers/video_transcript_controller.dart';
@@ -16,7 +15,6 @@ void main() {
   // Initialize controllers
   Get.put(ThemeController());
   Get.put(WorkspaceController());
-  Get.put(DocumentsTabsController());
   Get.put(AppSettingsController());
   Get.put(TasksController());
   Get.put(VideoTranscriptController());
