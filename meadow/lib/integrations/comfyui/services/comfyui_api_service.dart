@@ -312,7 +312,11 @@ class ComfyUIAPIService extends GetxService {
       final response = await _dio.get('/models/$folder');
       return List<String>.from(response.data);
     } catch (e) {
-      throw Exception('Failed to get models for $folder: $e');
+      Get.snackbar(
+        'Info',
+        'Cannot fetch models, please check your ComfyUI connection.',
+      );
+      return [];
     }
   }
 
