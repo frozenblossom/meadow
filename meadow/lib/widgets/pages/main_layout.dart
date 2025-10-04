@@ -73,19 +73,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               left: 0,
               right: 0,
               bottom: 0,
-              child: FloatingDock(
-                onMediaTypeChanged: (MediaType mediaType) {
-                  setState(() {
-                    _selectedMediaType = mediaType;
-                  });
-                },
-                onPromptSubmitted: (String prompt) {
-                  // TODO: Handle prompt submission based on selected media type
-                  print(
-                    'Prompt submitted: $prompt for ${_selectedMediaType.name}',
-                  );
-                },
-              ),
+              child: FloatingDock(),
             ),
           ],
         ),
