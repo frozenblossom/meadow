@@ -131,7 +131,6 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   });
                 },
                 onPromptSubmitted: (String prompt) {
-                  // TODO: Handle prompt submission based on selected media type
                   print(
                     'Prompt submitted: $prompt for ${_selectedMediaType.name}',
                   );

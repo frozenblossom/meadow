@@ -479,7 +479,6 @@ class ComfyUIAPIService extends GetxService {
     }
   }
 
-  /// Free memory and unload models
   Future<void> freeMemory({
     bool unloadModels = false,
     bool freeMemory = false,
@@ -509,117 +508,5 @@ class ComfyUIAPIService extends GetxService {
   String generateClientId() {
     return DateTime.now().millisecondsSinceEpoch.toString() +
         (1000 + (DateTime.now().microsecond % 9000)).toString();
-  }
-
-  /// Validate a workflow before submission
-  Future<Map<String, dynamic>> validateWorkflow(
-    Map<String, dynamic> workflow,
-  ) async {
-    // This would typically be done by submitting with validation flag
-    // For now, we'll do basic client-side validation
-
-    final errors = <String, dynamic>{};
-    final warnings = <String>[];
-
-    // Check if workflow has required structure
-    if (workflow.isEmpty) {
-      errors['workflow'] = 'Workflow cannot be empty';
-      return {'valid': false, 'errors': errors, 'warnings': warnings};
-    }
-
-    // Check for nodes
-    bool hasNodes = false;
-    for (final value in workflow.values) {
-      if (value is Map && value.containsKey('class_type')) {
-        hasNodes = true;
-        break;
-      }
-    }
-
-    if (!hasNodes) {
-      errors['nodes'] = 'Workflow must contain at least one node';
-    }
-
-    // Add more validation logic as needed
-
-    return {
-      'valid': errors.isEmpty,
-      'errors': errors,
-      'warnings': warnings,
-    };
-  }
-
-  /// Create a simplified workflow for common operations
-  Map<String, dynamic> createSimpleWorkflow({
-    required String modelPath,
-    required String prompt,
-    String? negativePrompt,
-    int width = 512,
-    int height = 512,
-    int steps = 20,
-    double cfgScale = 7.0,
-    int seed = -1,
-  }) {
-    // This is a simplified workflow structure
-    // In practice, you'd want more sophisticated workflow building
-    return {
-      "1": {
-        "class_type": "CheckpointLoaderSimple",
-        "inputs": {
-          "ckpt_name": modelPath,
-        },
-      },
-      "2": {
-        "class_type": "CLIPTextEncode",
-        "inputs": {
-          "text": prompt,
-          "clip": ["1", 1],
-        },
-      },
-      "3": {
-        "class_type": "CLIPTextEncode",
-        "inputs": {
-          "text": negativePrompt ?? "",
-          "clip": ["1", 1],
-        },
-      },
-      "4": {
-        "class_type": "EmptyLatentImage",
-        "inputs": {
-          "width": width,
-          "height": height,
-          "batch_size": 1,
-        },
-      },
-      "5": {
-        "class_type": "KSampler",
-        "inputs": {
-          "seed": seed == -1 ? DateTime.now().millisecondsSinceEpoch : seed,
-          "steps": steps,
-          "cfg": cfgScale,
-          "sampler_name": "euler",
-          "scheduler": "normal",
-          "denoise": 1.0,
-          "model": ["1", 0],
-          "positive": ["2", 0],
-          "negative": ["3", 0],
-          "latent_image": ["4", 0],
-        },
-      },
-      "6": {
-        "class_type": "VAEDecode",
-        "inputs": {
-          "samples": ["5", 0],
-          "vae": ["1", 2],
-        },
-      },
-      "7": {
-        "class_type": "SaveImage",
-        "inputs": {
-          "filename_prefix": "meadow_generation",
-          "images": ["6", 0],
-        },
-      },
-    };
   }
 }
